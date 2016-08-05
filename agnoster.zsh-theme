@@ -120,6 +120,13 @@ prompt_status() {
   [[ -n "$symbols" ]] && prompt_segment $PRIMARY_FG default " $symbols "
 }
 
+# Dir: current working directory
+prompt_python() {
+  if [[ -n $python_info[virtualenv] ]]; then
+    prompt_segment magenta $PRIMARY_FG $python_info[virtualenv]
+  fi
+}
+
 ## Main prompt
 prompt_agnoster_main() {
   RETVAL=$?
@@ -127,12 +134,19 @@ prompt_agnoster_main() {
   prompt_status
   prompt_context
   prompt_dir
+  prompt_python
   prompt_git
   prompt_end
 }
 
 prompt_agnoster_precmd() {
   vcs_info
+
+  # Check for activated virtualenv
+  if (( $+functions[python-info] )); then
+    python-info
+  fi
+
   PROMPT='%{%f%b%k%}$(prompt_agnoster_main) '
 }
 
@@ -148,6 +162,9 @@ prompt_agnoster_setup() {
   zstyle ':vcs_info:*' check-for-changes false
   zstyle ':vcs_info:git*' formats '%b'
   zstyle ':vcs_info:git*' actionformats '%b (%a)'
+
+  # %v - virtualenv name.
+  zstyle ':prezto:module:python:info:virtualenv' format '(%v)'
 }
 
 prompt_agnoster_setup "$@"
